@@ -1,157 +1,140 @@
 # Lumina AI
 
-Lumina AI is an AI-powered image generation and transformation web application built with **Next.js**. It allows users to enhance, edit, and transform images using state-of-the-art AI features like restoration, background removal, generative fill, object removal, and recoloring — all powered by a **credit-based system**.
+Lumina AI is a credit-based image transformation platform built with Next.js. Users can upload images, apply AI-powered transformations, manage their image collections, and purchase additional credits through Stripe.
 
----
-## 🔗 Live Demo
+## Features
 
-> Rebranded as **Lumina AI**. Configure your production deployment URL in your hosting provider.
+- Image restoration
+- Background removal
+- Generative fill
+- Object removal
+- Object recoloring
+- Clerk authentication and account management
+- Cloudinary image upload, transformation, and delivery
+- Credit balances and Stripe payments
+- Responsive dashboard for browsing and managing transformed images
 
-## 🚀 Features
+## Tech Stack
 
-- ✨ **Image Restoration** – Enhance and restore old or damaged photos
-- 🔍 **Background Removal** – Remove image backgrounds using AI
-- 🧠 **Generative Fill** – Fill in missing parts of images with AI
-- ❌ **Object Removal** – Eliminate unwanted objects from images
-- 🎨 **Object Recoloring** – Change colors of specific image elements
-- 🔐 **User Authentication** – Secure account management with Clerk
-- 💳 **Credit System** – Usage-based features via credit pricing plans
-- 📱 **Responsive Design** – Optimized for mobile, tablet, and desktop
+- **Framework:** Next.js 14 with the App Router
+- **Language:** TypeScript
+- **UI:** React, Tailwind CSS, Radix UI, Lucide React
+- **Authentication:** Clerk
+- **Database:** MongoDB with Mongoose
+- **Media:** Cloudinary
+- **Payments:** Stripe
+- **Validation:** React Hook Form and Zod
 
----
+## Requirements
 
-## 🧰 Tech Stack
+- Node.js 18 or newer
+- A MongoDB database
+- A Clerk application
+- A Cloudinary account
+- A Stripe account with webhook access
 
-- **Frontend**: Next.js 14.1.0, React 18, Tailwind CSS
-- **Authentication**: [Clerk](https://clerk.dev)
-- **Database**: MongoDB, Mongoose
-- **Image Processing**: [Cloudinary](https://cloudinary.com/)
-- **Payments**: Stripe
-- **Forms & Validation**: React Hook Form, Zod
-- **UI**: Radix UI
+## Getting Started
 
----
+### 1. Install dependencies
 
-## 📦 Project Structure
+```bash
+npm install
 ```
-Lumina AI/
-├── app/                    # Next.js App Router structure
-├── assets/                 # Static assets
-├── components/             # React components
-├── constants/              # Application constants
-├── lib/                    # Utility functions and server actions
-│   ├── actions/            # Server actions
-│   └── database/           # Database models and connection
-└── public/                 # Public static files
 
-```
----
+### 2. Configure environment variables
 
-## ⚙️ Getting Started
-
-### ✅ Prerequisites
-
-- Node.js **v18+**
-- MongoDB account
-- Cloudinary account
-- Stripe account
-- Clerk account
-
----
-
-### 🔐 Environment Variables
-
-Create a `.env.local` file in your root directory and add:
+Create a `.env.local` file in the project root:
 
 ```env
-# Clerk Authentication
+# Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
 CLERK_SECRET_KEY=your_secret_key
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
-
-
-# Clerk Webhook
-WEBHOOK_SECRET=your_webhook_secret
+WEBHOOK_SECRET=your_clerk_webhook_secret
 
 # MongoDB
-MONGODB_URI=your_mongodb_connection_string
+MONGODB_URL=your_mongodb_connection_string
 
 # Cloudinary
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
 # Stripe
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_publishable_key
+STRIPE_SECRET_KEY=your_secret_key
+STRIPE_WEBHOOK_SECRET=your_webhook_secret
+NEXT_PUBLIC_SERVER_URL=http://localhost:3000
 ```
 
-### 🧑‍💻 Installation
-Clone the repository:
+Never commit `.env.local` or any other file containing credentials.
 
-git clone https://github.com/mozammel787/AImagery.git
-cd AImagery
-Install dependencies:
+### 3. Start the development server
 
-npm install
-yarn install
-Run the development server:
-
+```bash
 npm run dev
-yarn dev
-Open http://localhost:3000 to view the app in your browser.
+```
 
-### 🎯 Transformation Types
-Lumina AI offers five main AI-powered transformation tools:
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Restore Image – Enhance and restore old or damaged images
+## Available Scripts
 
-Background Remove – Remove image backgrounds
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Start the production server |
+| `npm run lint` | Run the Next.js lint checks |
 
-Generative Fill – Fill in missing or blank areas
+## Application Routes
 
-Object Remove – Eliminate unwanted objects
+| Route | Purpose |
+| --- | --- |
+| `/` | Landing page |
+| `/sign-in` | User sign-in |
+| `/sign-up` | User registration |
+| `/dashboard` | Image dashboard and collection view |
+| `/transformations/add/[type]` | Create a new transformation |
+| `/transformations/[id]` | View a transformation |
+| `/transformations/[id]/update` | Update a transformation |
+| `/credits` | View and purchase credit packages |
+| `/profile` | View account and usage information |
 
-Object Recolor – Change the color of specific objects
+## Project Structure
 
-### 💳 Credit System
-Each image transformation consumes credits. Users can choose from different pricing plans:
+```text
+app/            Next.js routes, layouts, and webhook handlers
+components/     Shared application and UI components
+constants/      Shared application constants
+lib/actions/    Server actions for users, images, and transactions
+lib/database/   MongoDB connection and Mongoose models
+public/         Static assets, icons, and service worker files
+types/          Shared TypeScript declarations
+```
 
-| Plan Name    | Credits | Price |
-| ------------ | ------- | ----- |
-| Free Plan    | 10      | Free  |
-| Pro Package  | 120     | \$40  |
-| Premium Plan | 2000    | \$199 |
+## Webhooks
 
+Configure the following webhook endpoints in your providers:
 
-Each transformation consumes 1 credit.
+- Clerk: `POST /api/webhooks/clerk`
+- Stripe: `POST /api/webhooks/stripe`
 
-### 🚢 Deployment
-The easiest way to deploy Lumina AI is to use Vercel, the creators of Next.js. Just connect your GitHub repository and set your environment variables.
+Use the corresponding signing secrets in `WEBHOOK_SECRET` and `STRIPE_WEBHOOK_SECRET`.
 
-### 📄 License
+## Deployment
+
+Lumina AI can be deployed to Vercel or another Node.js-compatible platform.
+
+1. Connect the repository to your hosting provider.
+2. Add all required environment variables for the target environment.
+3. Set `NEXT_PUBLIC_SERVER_URL` to the deployed application URL.
+4. Update the Clerk and Stripe webhook URLs to use the deployed domain.
+5. Run `npm run build` to verify the production build before release.
+
+## License
+
 This project is licensed under the MIT License.
-
-### 🙏 Acknowledgements
-Next.js
-
-Clerk
-
-Cloudinary
-
-MongoDB
-
-Stripe
-
-Tailwind CSS
-
-Radix UI
-
-
----
-
-Let me know if you’d like a version with badges, screenshots, or documentation links added.
 
