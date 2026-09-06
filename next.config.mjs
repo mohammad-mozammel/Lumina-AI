@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: '.next-lumina-v2',
   reactStrictMode: true,
   swcMinify: true,
   compress: true,
