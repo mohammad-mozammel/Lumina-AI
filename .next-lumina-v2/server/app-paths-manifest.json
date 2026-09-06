@@ -1,9 +1,0 @@
-{
-  "/(root)/page": "app/(root)/page.js",
-  "/(root)/transformations/add/[type]/page": "app/(root)/transformations/add/[type]/page.js",
-  "/(root)/dashboard/page": "app/(root)/dashboard/page.js",
-  "/(root)/profile/page": "app/(root)/profile/page.js",
-  "/(auth)/sign-in/[[...signin]]/page": "app/(auth)/sign-in/[[...signin]]/page.js",
-  "/(auth)/sign-up/[[...sign-up]]/page": "app/(auth)/sign-up/[[...sign-up]]/page.js",
-  "/(root)/credits/page": "app/(root)/credits/page.js"
-}

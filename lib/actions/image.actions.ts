@@ -145,17 +145,31 @@ export async function getUserImages({
   limit = 9,
   page = 1,
   userId,
+  searchQuery = '',
 }: {
   limit?: number;
   page: number;
   userId: string;
+  searchQuery?: string;
 }) {
   try {
     await connectToDatabase();
 
+    const safeSearchQuery = escapeRegex(searchQuery.trim()).slice(0, 80);
+    const query = safeSearchQuery
+      ? {
+          author: userId,
+          $or: [
+            { title: { $regex: safeSearchQuery, $options: 'i' } },
+            { prompt: { $regex: safeSearchQuery, $options: 'i' } },
+            { color: { $regex: safeSearchQuery, $options: 'i' } },
+          ],
+        }
+      : { author: userId };
+
     const skipAmount = (Number(page) - 1) * limit;
 
-    const imagesQuery = populateUser(Image.find({ author: userId })
+    const imagesQuery = populateUser(Image.find(query)
       .select('title transformationType publicId secureURL width height config aspectRatio color prompt author createdAt updatedAt')
       .sort({ updatedAt: -1 })
       .skip(skipAmount)
@@ -164,7 +178,7 @@ export async function getUserImages({
 
     const [images, totalImages] = await Promise.all([
       imagesQuery,
-      Image.countDocuments({ author: userId }),
+      Image.countDocuments(query),
     ]);
 
     return {

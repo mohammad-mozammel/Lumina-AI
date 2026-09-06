@@ -1,7 +1,11 @@
 import { Suspense } from "react";
-import { getAllImages } from "@/lib/actions/image.actions";
+import { auth } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import { getUserImages } from "@/lib/actions/image.actions";
+import { getUserById } from "@/lib/actions/user.actions";
 import Link from "next/link";
 import { Collection } from "@/components/shared/Collection";
+import { CldImage } from "next-cloudinary";
 import {
   ArrowRight,
   ImagePlus,
@@ -14,12 +18,15 @@ import {
   Coins,
   Download,
   Layers3,
+  UserRound,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   SkeletonDashboardHero,
   SkeletonStatsGrid,
   SkeletonToolGrid,
   SkeletonCollectionGrid,
+  Skeleton,
 } from "@/components/ui/skeleton";
 
 export const dynamic = "force-dynamic";
@@ -71,15 +78,21 @@ async function DashboardContent({
   const resolvedSearchParams = await searchParams;
   const page = Number(resolvedSearchParams?.page) || 1;
   const searchQuery = resolvedSearchParams?.query || "";
-  const images = await getAllImages({ page, searchQuery });
+
+  const { userId } = auth();
+  if (!userId) redirect("/sign-in");
+
+  const user = await getUserById(userId);
+  const images = await getUserImages({ page, userId: user?._id, searchQuery });
   const recentCount = images?.data?.length ?? 0;
+  const totalImages = images?.totalPages ? images.totalPages * 9 : recentCount;
 
   return (
     <div className="dashboard-page animate-in">
       <section className="dashboard-hero">
         <div className="dashboard-hero-copy">
           <span className="dashboard-eyebrow">
-            <Sparkles size={12} /> Creative workspace
+            <Sparkles size={12} /> Welcome back, {user?.firstName || "Creator"}
           </span>
           <h2>
             Create. Transform.<br /><em>Refine.</em>
@@ -107,17 +120,17 @@ async function DashboardContent({
 
       <section className="stats-grid">
         <article>
-          <span>Recent results</span>
-          <strong>{recentCount}</strong>
+          <span>Images created</span>
+          <strong>{totalImages}</strong>
           <small>
-            <Layers3 size={13} /> On this page
+            <Layers3 size={13} /> Total in your library
           </small>
         </article>
         <article>
-          <span>Credit workflow</span>
-          <strong>1</strong>
+          <span>Credits available</span>
+          <strong>{user?.creditBalance ?? 0}</strong>
           <small>
-            <Coins size={13} /> Credit per transform
+            <Coins size={13} /> Ready for transformations
           </small>
         </article>
         <article>
@@ -128,10 +141,10 @@ async function DashboardContent({
           </small>
         </article>
         <article>
-          <span>Library</span>
-          <strong>∞</strong>
+          <span>This page</span>
+          <strong>{recentCount}</strong>
           <small>
-            <Download size={13} /> Save & export
+            <Download size={13} /> Showing current page
           </small>
         </article>
       </section>
@@ -158,11 +171,25 @@ async function DashboardContent({
       </section>
 
       <section className="dashboard-section dashboard-library">
+        <div className="collection-heading">
+          <h2>Your photo library</h2>
+          <div className="flex items-center gap-2 text-sm muted">
+            <ImageIcon size={14} />
+            <span>{totalImages} images</span>
+            {user?.creditBalance !== undefined && (
+              <>
+                <span>•</span>
+                <Coins size={14} />
+                <span>{user.creditBalance} credits</span>
+              </>
+            )}
+          </div>
+        </div>
         <Suspense fallback={<SkeletonCollectionGrid count={4} />}>
           <Collection
             hasSearch
             images={images?.data ?? []}
-            totalPages={images?.totalPage}
+            totalPages={images?.totalPages}
             page={page}
           />
         </Suspense>
@@ -186,6 +213,9 @@ function DashboardSkeleton() {
         <SkeletonToolGrid count={5} />
       </section>
       <section className="dashboard-section dashboard-library">
+        <div className="collection-heading">
+          <Skeleton className="h-6 w-40" />
+        </div>
         <SkeletonCollectionGrid count={4} />
       </section>
     </div>

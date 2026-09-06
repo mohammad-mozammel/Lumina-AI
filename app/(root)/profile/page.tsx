@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
-import { UserRound, Coins, Image as ImageIcon, Sparkles } from "lucide-react";
+import { UserRound, Coins, Image as ImageIcon, Sparkles, Mail, BadgeCheck } from "lucide-react";
 import { Collection } from "@/components/shared/Collection";
+import { CldImage } from "next-cloudinary";
 import Header from "@/components/shared/Header";
 import { getUserImages } from "@/lib/actions/image.actions";
 import { getUserById } from "@/lib/actions/user.actions";
@@ -10,6 +11,7 @@ import { Skeleton, SkeletonCard, SkeletonCollectionGrid } from "@/components/ui/
 
 interface ProfileSearchParams {
   page?: string;
+  query?: string;
 }
 
 async function ProfileContent({
@@ -19,10 +21,12 @@ async function ProfileContent({
 }) {
   const resolvedSearchParams = await searchParams;
   const page = Number(resolvedSearchParams?.page) || 1;
+  const searchQuery = resolvedSearchParams?.query || "";
   const { userId } = auth();
   if (!userId) redirect("/sign-in");
   const user = await getUserById(userId);
-  const images = await getUserImages({ page, userId: user?._id });
+  const images = await getUserImages({ page, userId: user?._id, searchQuery });
+  const totalImages = images?.totalPages ? images.totalPages * 9 : (images?.data?.length ?? 0);
 
   return (
     <div className="profile-page animate-in">
@@ -33,12 +37,36 @@ async function ProfileContent({
       />
       <section className="profile-identity">
         <div className="profile-avatar">
-          <UserRound size={23} />
+          {user?.photo ? (
+            <CldImage
+              src={user.photo}
+              alt={`${user.firstName} ${user.lastName}`}
+              width={80}
+              height={80}
+              crop="fill"
+              gravity="face"
+              className="rounded-full"
+            />
+          ) : (
+            <UserRound size={23} />
+          )}
         </div>
         <div>
           <span className="section-kicker">Account</span>
-          <h2>Creator workspace</h2>
+          <h2>{user?.firstName || "Creator"} {user?.lastName || ""}</h2>
           <p>Your saved transformations and current usage.</p>
+          <div className="flex items-center gap-4 mt-3 text-sm muted">
+            <span className="flex items-center gap-1">
+              <Mail size={14} />
+              {user?.email}
+            </span>
+            {user?.planId && user.planId > 1 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                <BadgeCheck size={12} />
+                Pro Plan
+              </span>
+            )}
+          </div>
         </div>
       </section>
       <section className="profile-stats">
@@ -59,8 +87,8 @@ async function ProfileContent({
               <ImageIcon size={16} aria-hidden="true" />
             </b>
           </div>
-          <strong>{images?.data?.length ?? 0}</strong>
-          <small>Showing the current library page</small>
+          <strong>{totalImages}</strong>
+          <small>Total in your library</small>
         </article>
         <article>
           <div className="stat-row">
@@ -74,8 +102,23 @@ async function ProfileContent({
         </article>
       </section>
       <section className="profile-library">
+        <div className="collection-heading">
+          <h2>Your photo library</h2>
+          <div className="flex items-center gap-2 text-sm muted">
+            <ImageIcon size={14} />
+            <span>{totalImages} images</span>
+            {user?.creditBalance !== undefined && (
+              <>
+                <span>•</span>
+                <Coins size={14} />
+                <span>{user.creditBalance} credits</span>
+              </>
+            )}
+          </div>
+        </div>
         <Suspense fallback={<SkeletonCollectionGrid count={4} />}>
           <Collection
+            hasSearch
             images={images?.data ?? []}
             totalPages={images?.totalPages}
             page={page}
@@ -100,6 +143,7 @@ function ProfileSkeleton() {
           <Skeleton className="h-3 w-16" />
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3 w-48" />
         </div>
       </section>
       <section className="profile-stats grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -108,6 +152,9 @@ function ProfileSkeleton() {
         <SkeletonCard />
       </section>
       <section className="profile-library">
+        <div className="collection-heading">
+          <Skeleton className="h-6 w-32" />
+        </div>
         <SkeletonCollectionGrid count={4} />
       </section>
     </div>
