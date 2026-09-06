@@ -2,6 +2,10 @@
 
 Lumina AI is a credit-based image transformation platform built with Next.js. Users can upload images, apply AI-powered transformations, manage their image collections, and purchase additional credits through Stripe.
 
+## Live Demo
+
+Visit the deployed application at [web-lumina-ai.vercel.app](https://web-lumina-ai.vercel.app/).
+
 ## Features
 
 - Image restoration
