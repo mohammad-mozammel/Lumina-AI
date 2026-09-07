@@ -27,7 +27,6 @@ async function ProfileContent({
   const user = await getUserById(userId);
   const images = await getUserImages({ page, userId: user?._id, searchQuery });
   const totalImages = images?.totalPages ? images.totalPages * 9 : (images?.data?.length ?? 0);
-
   return (
     <div className="profile-page animate-in">
       <Header
