@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { clerkClient } from "@clerk/nextjs/server";
 
 import User from "../database/models/user.model";
 import { connectToDatabase } from "../database/mongoose";
@@ -25,9 +26,38 @@ export async function getUserById(userId: string) {
   try {
     await connectToDatabase();
 
-    const user = await User.findOne({ clerkId: userId });
+    let user = await User.findOne({ clerkId: userId });
 
-    if (!user) throw new Error("User not found");
+    // Auto-create user if not found (for local dev without webhook)
+    if (!user) {
+      const clerkUser = await clerkClient.users.getUser(userId);
+      
+      if (!clerkUser) throw new Error("User not found in Clerk");
+      
+      const newUser = await User.create({
+        clerkId: clerkUser.id,
+        email: clerkUser.emailAddresses[0]?.emailAddress || "",
+        username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress?.split("@")[0] || "user",
+        firstName: clerkUser.firstName || "",
+        lastName: clerkUser.lastName || "",
+        photo: clerkUser.imageUrl || "",
+        creditBalance: 10,
+        planId: 1,
+      });
+
+      // Set public metadata in Clerk
+      try {
+        await clerkClient.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            userId: newUser._id.toString(),
+          },
+        });
+      } catch (metaError) {
+        console.warn("Failed to update Clerk metadata:", metaError);
+      }
+
+      user = newUser;
+    }
 
     return JSON.parse(JSON.stringify(user));
   } catch (error) {

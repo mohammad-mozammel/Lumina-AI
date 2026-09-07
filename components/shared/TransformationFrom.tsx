@@ -18,6 +18,7 @@ import { addImage, updateImage } from "@/lib/actions/image.actions"
 import { useRouter } from "next/navigation"
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal"
 import { Coins, ImagePlus, Sparkles } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 
 export const formSchema = z.object({
@@ -37,6 +38,7 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
     const [isTransforming, setIsTransforming] = useState(false);
     const [transformationConfig, setTransformationConfig] = useState(config);
     const router = useRouter()
+    const { toast } = useToast()
 
     const [, startTransition] = useTransition()
 
@@ -82,7 +84,6 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
 
             if (action === 'Add') {
                 try {
-
                     const newImage = await addImage({
                         image: imageData,
                         userId,
@@ -90,12 +91,27 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
                     })
 
                     if (newImage) {
+                        toast({
+                            title: "Saved to library",
+                            description: "Your transformation has been saved successfully.",
+                        })
                         form.reset()
                         setImage(data)
                         router.push(`/transformations/${newImage._id}`)
+                    } else {
+                        toast({
+                            title: "Save failed",
+                            description: "Unable to save image. Please try again.",
+                            variant: "destructive",
+                        })
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.error(error);
+                    toast({
+                        title: "Save failed",
+                        description: error instanceof Error ? error.message : "An unexpected error occurred",
+                        variant: "destructive",
+                    })
                 }
             }
 
@@ -111,10 +127,25 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
                     })
 
                     if (updatedImage) {
+                        toast({
+                            title: "Updated successfully",
+                            description: "Your changes have been saved.",
+                        })
                         router.push(`/transformations/${updatedImage._id}`)
+                    } else {
+                        toast({
+                            title: "Update failed",
+                            description: "Unable to update image. Please try again.",
+                            variant: "destructive",
+                        })
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.error(error);
+                    toast({
+                        title: "Update failed",
+                        description: error instanceof Error ? error.message : "An unexpected error occurred",
+                        variant: "destructive",
+                    })
                 }
             }
         }

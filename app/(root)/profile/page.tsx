@@ -3,11 +3,11 @@ import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { UserRound, Coins, Image as ImageIcon, Sparkles, Mail, BadgeCheck } from "lucide-react";
 import { Collection } from "@/components/shared/Collection";
-import { CldImage } from "next-cloudinary";
 import Header from "@/components/shared/Header";
 import { getUserImages } from "@/lib/actions/image.actions";
 import { getUserById } from "@/lib/actions/user.actions";
 import { Skeleton, SkeletonCard, SkeletonCollectionGrid } from "@/components/ui/skeleton";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 interface ProfileSearchParams {
   page?: string;
@@ -36,21 +36,11 @@ async function ProfileContent({
         action={{ label: "Create new", href: "/transformations/add/fill" }}
       />
       <section className="profile-identity">
-        <div className="profile-avatar">
-          {user?.photo ? (
-            <CldImage
-              src={user.photo}
-              alt={`${user.firstName} ${user.lastName}`}
-              width={80}
-              height={80}
-              crop="fill"
-              gravity="face"
-              className="rounded-full"
-            />
-          ) : (
-            <UserRound size={23} />
-          )}
-        </div>
+        <UserAvatar
+          photo={user?.photo}
+          name={`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
+          size={80}
+        />
         <div>
           <span className="section-kicker">Account</span>
           <h2>{user?.firstName || "Creator"} {user?.lastName || ""}</h2>

@@ -1,11 +1,10 @@
 import { Suspense } from "react";
 import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
-import { getUserImages } from "@/lib/actions/image.actions";
+import { getAllImages, getUserImages } from "@/lib/actions/image.actions";
 import { getUserById } from "@/lib/actions/user.actions";
 import Link from "next/link";
 import { Collection } from "@/components/shared/Collection";
-import { CldImage } from "next-cloudinary";
 import {
   ArrowRight,
   ImagePlus,
@@ -83,9 +82,10 @@ async function DashboardContent({
   if (!userId) redirect("/sign-in");
 
   const user = await getUserById(userId);
-  const images = await getUserImages({ page, userId: user?._id, searchQuery });
-  const recentCount = images?.data?.length ?? 0;
-  const totalImages = images?.totalPages ? images.totalPages * 9 : recentCount;
+  const userImages = await getUserImages({ page, userId: user?._id, searchQuery });
+  const allImages = await getAllImages({ page, searchQuery, limit: 9 });
+  const recentCount = userImages?.data?.length ?? 0;
+  const totalImages = userImages?.totalPages ? userImages.totalPages * 9 : recentCount;
 
   return (
     <div className="dashboard-page animate-in">
@@ -188,8 +188,8 @@ async function DashboardContent({
         <Suspense fallback={<SkeletonCollectionGrid count={4} />}>
           <Collection
             hasSearch
-            images={images?.data ?? []}
-            totalPages={images?.totalPages}
+            images={allImages?.data ?? []}
+            totalPages={allImages?.totalPage}
             page={page}
           />
         </Suspense>
