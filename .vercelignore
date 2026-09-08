@@ -1,0 +1,25 @@
+# Vercel ignore - exclude from deployment build
+.next
+node_modules
+*.log
+.env.local
+.env*.local
+.vercel
+*.tsbuildinfo
+.next-env.d.ts
+*.md
+!README.md
+.git
+.github
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+coverage
+.nyc_output
+.turbo
+dist
+build
+*.tsbuildinfo

@@ -140,6 +140,13 @@ const nextConfig = {
     }
     return config;
   },
+  // Reduce build time
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
 }
 
 export default nextConfig
