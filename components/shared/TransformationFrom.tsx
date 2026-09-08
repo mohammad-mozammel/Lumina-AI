@@ -14,7 +14,7 @@ import MediaUploader from "./MediaUploader"
 import TransformedImage from "./TransformedImage"
 import { updateCredits } from "@/lib/actions/user.actions"
 import { getCldImageUrl } from "next-cloudinary"
-import { addImage, updateImage } from "@/lib/actions/image.actions"
+import { addImage, updateImage, generateImage } from "@/lib/actions/image.actions"
 import { useRouter } from "next/navigation"
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal"
 import { Coins, ImagePlus, Sparkles } from "lucide-react"
@@ -32,6 +32,7 @@ export const formSchema = z.object({
 const TransformationFrom = ({ action, data = null, userId, type, creditBalance, config = null }: TransformationFormProps) => {
 
     const transformationType = transformationTypes[type];
+    const isGenerate = type === "generate"
     const [image, setImage] = useState(data);
     const [newTransformation, setNewTransformation] = useState<Transformations | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,7 +61,49 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
 
-        if (data || image) {
+        if (isGenerate) {
+            // For generation, we need prompt and aspectRatio
+            if (!values.prompt || !values.aspectRatio) {
+                toast({
+                    title: "Missing fields",
+                    description: "Please provide a prompt and select an aspect ratio.",
+                    variant: "destructive",
+                })
+                setIsSubmitting(false)
+                return
+            }
+
+            try {
+                const newImage = await generateImage({
+                    prompt: values.prompt,
+                    aspectRatio: values.aspectRatio,
+                    userId,
+                    path: '/'
+                })
+
+                if (newImage) {
+                    toast({
+                        title: "Generated & saved",
+                        description: "Your AI image has been created and saved to library.",
+                    })
+                    form.reset()
+                    router.push(`/transformations/${newImage._id}`)
+                } else {
+                    toast({
+                        title: "Generation failed",
+                        description: "Unable to generate image. Please try again.",
+                        variant: "destructive",
+                    })
+                }
+            } catch (error) {
+                console.error(error);
+                toast({
+                    title: "Generation failed",
+                    description: error instanceof Error ? error.message : "An unexpected error occurred",
+                    variant: "destructive",
+                })
+            }
+        } else if (data || image) {
             const transformationUrl = getCldImageUrl({
                 width: image?.width,
                 height: image?.height,
@@ -202,7 +245,7 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
         }
     }, [image, transformationType.config, type])
 
-    return (
+return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="transformation-form">
                 <div className="studio-panel">
@@ -210,20 +253,80 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
                         <div><span className="studio-eyebrow">Canvas</span><strong>{transformationType.title}</strong></div>
                         <span className="credit-pill"><Coins size={13} /> {Math.abs(creditFee)} credit</span>
                     </div>
-                    <div className="media-uploader-field">
-                        <CustomField
-                            control={form.control}
-                            name="publicId"
-                            className="flex size-full flex-col"
-                            render={({ field }) => (
-                                <MediaUploader onValueChange={field.onChange} setImage={setImage} publicId={field.value} image={image} type={type} />
-                            )}
-                        />
-                        <TransformedImage image={image} type={type} title={form.getValues().title}
-                            isTransforming={isTransforming} setIsTransforming={setIsTransforming}
-                            transformationConfig={transformationConfig} />
-                    </div>
-                    <div className="media-uploader-tip"><ImagePlus size={13} /><span>Your original stays untouched. Lumina creates the transformed version separately.</span></div>
+
+                    {isGenerate ? (
+                        // Generate mode: prompt input instead of image upload
+                        <div className="media-uploader-field generate-mode">
+                            <div className="generate-prompt-area">
+                                <div className="prompt-header">
+                                    <span className="prompt-label">What do you want to create?</span>
+                                    <span className="prompt-char-count">{form.getValues().prompt?.length || 0}/500</span>
+                                </div>
+                                <CustomField
+                                    control={form.control}
+                                    name="prompt"
+                                    className="w-full"
+                                    render={({ field }) => (
+                                        <div className="prompt-input-wrapper">
+                                            <textarea
+                                                {...field}
+                                                placeholder="Describe the image you want to create…"
+                                                className="prompt-textarea"
+                                                rows={4}
+                                                style={{ resize: 'none' }}
+                                                maxLength={500}
+                                                onChange={(e) => {
+                                                    field.onChange(e.target.value);
+                                                }}
+                                            />
+                                            <div className="prompt-actions">
+                                                <div className="prompt-examples">
+                                                    <span className="examples-label">Try:</span>
+                                                    <button type="button" className="example-chip" onClick={() => field.onChange("A majestic lion in cyberpunk style, neon lights, highly detailed, 8k")}>
+                                                        Cyberpunk Lion
+                                                    </button>
+                                                    <button type="button" className="example-chip" onClick={() => field.onChange("Serene japanese garden at sunrise, cherry blossoms, koi pond, photorealistic")}>
+                                                        Japanese Garden
+                                                    </button>
+                                                    <button type="button" className="example-chip" onClick={() => field.onChange("Futuristic cityscape at night, flying cars, holographic ads, rain-slicked streets, cinematic lighting")}>
+                                                        Futuristic City
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                />
+                                <div className="generate-prompt-hint">
+                                    <Sparkles size={14} />
+                                    <span>Be descriptive for best results. Try styles like: photorealistic, oil painting, anime, 3D render, cinematic lighting</span>
+                                </div>
+                            </div>
+                            <TransformedImage
+                                image={image}
+                                type={type}
+                                title={form.getValues().title}
+                                isTransforming={isTransforming}
+                                setIsTransforming={setIsTransforming}
+                                transformationConfig={transformationConfig}
+                            />
+                        </div>
+                    ) : (
+                        // Transform mode: image upload
+                        <div className="media-uploader-field">
+                            <CustomField
+                                control={form.control}
+                                name="publicId"
+                                className="flex size-full flex-col"
+                                render={({ field }) => (
+                                    <MediaUploader onValueChange={field.onChange} setImage={setImage} publicId={field.value} image={image} type={type} />
+                                )}
+                            />
+                            <TransformedImage image={image} type={type} title={form.getValues().title}
+                                isTransforming={isTransforming} setIsTransforming={setIsTransforming}
+                                transformationConfig={transformationConfig} />
+                            <div className="media-uploader-tip"><ImagePlus size={13} /><span>Your original stays untouched. Lumina creates the transformed version separately.</span></div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="studio-panel studio-side">
@@ -234,6 +337,20 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
                         <CustomField control={form.control} name="title" formLabel="Project name" className="w-full"
                             render={({ field }) => <Input {...field} placeholder="Give this edit a name" className="input-field" />} />
                     </div>
+
+                    {isGenerate && (
+                        <div className="form-section">
+                            <CustomField control={form.control} name="aspectRatio" formLabel="Aspect Ratio" className="w-full"
+                                render={({ field }) => (
+                                    <Select onValueChange={(value) => onSelectFieldHandler(value, field.onChange)} value={field.value}>
+                                        <SelectTrigger className="select-field"><SelectValue placeholder="Select ratio" /></SelectTrigger>
+                                        <SelectContent>{Object.keys(aspectRatioOptions).map((key) => (
+                                            <SelectItem key={key} value={key} className="select-item">{aspectRatioOptions[key as AspectRatioKey].label}</SelectItem>
+                                        ))}</SelectContent>
+                                    </Select>
+                                )} />
+                        </div>
+                    )}
 
                     {type === 'fill' && (
                         <div className="form-section">
@@ -271,13 +388,35 @@ const TransformationFrom = ({ action, data = null, userId, type, creditBalance, 
                         <span>Available credits</span><strong>{creditBalance ?? 0}</strong>
                         <span>Cost</span><strong>{Math.abs(creditFee)}</strong>
                     </div>
-                    <Button type="button" className="submit-button" disabled={isTransforming || newTransformation === null || !image?.publicId || creditBalance < Math.abs(creditFee)}
-                        onClick={onTransformationHandler}>
-                        {isTransforming ? 'Processing…' : 'Apply transformation'}
-                    </Button>
-                    <Button type="submit" className="submit-button secondary-submit" disabled={isSubmitting || !image?.publicId}>
-                        {isSubmitting ? 'Saving…' : 'Save to library'}
-                    </Button>
+
+                    {isGenerate ? (
+                        <Button
+                            type="button"
+                            className="submit-button generate-btn"
+                            disabled={isTransforming || !form.getValues().prompt || !form.getValues().aspectRatio || creditBalance < Math.abs(creditFee)}
+                            onClick={async () => {
+                                setIsTransforming(true)
+                                await form.handleSubmit(onSubmit)()
+                            }}
+                        >
+                            {isTransforming ? 'Generating…' : 'Generate Image'}
+                        </Button>
+                    ) : (
+                        <Button
+                            type="button"
+                            className="submit-button"
+                            disabled={isTransforming || newTransformation === null || !image?.publicId || creditBalance < Math.abs(creditFee)}
+                            onClick={onTransformationHandler}
+                        >
+                            {isTransforming ? 'Processing…' : 'Apply transformation'}
+                        </Button>
+                    )}
+
+                    {!isGenerate && (
+                        <Button type="submit" className="submit-button secondary-submit" disabled={isSubmitting || !image?.publicId}>
+                            {isSubmitting ? 'Saving…' : 'Save to library'}
+                        </Button>
+                    )}
                 </div>
             </form>
         </Form>

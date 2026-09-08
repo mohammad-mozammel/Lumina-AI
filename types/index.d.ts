@@ -70,6 +70,7 @@ declare type Transformations = {
     multiple?: boolean;
   };
   removeBackground?: boolean;
+  generate?: boolean;
 };
 
 // ====== TRANSACTION PARAMS
@@ -94,7 +95,8 @@ declare type TransformationTypeKey =
   | "fill"
   | "remove"
   | "recolor"
-  | "removeBackground";
+  | "removeBackground"
+  | "generate";
 
 // ====== URL QUERY PARAMS
 declare type FormUrlQueryParams = {
@@ -200,5 +202,6 @@ declare namespace NodeJS {
     STRIPE_SECRET_KEY: string;
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: string;
     STRIPE_WEBHOOK_SECRET: string;
+    REPLICATE_API_TOKEN: string;
   }
 }

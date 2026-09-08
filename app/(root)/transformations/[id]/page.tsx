@@ -29,24 +29,24 @@ const ImageDetails = async ({ params }: TransformationPageParams) => {
 
       <section className="detail-meta detail-meta-modern">
         <div>
-          <span>Transformation</span>
+          <span>Transformation:</span>
           <strong>{image.transformationType}</strong>
         </div>
         {image.prompt && (
           <div>
-            <span>Prompt</span>
+            <span>Prompt:</span>
             <strong>{image.prompt}</strong>
           </div>
         )}
         {image.color && (
           <div>
-            <span>Color</span>
+            <span>Color:</span>
             <strong>{image.color}</strong>
           </div>
         )}
         {image.aspectRatio && (
           <div>
-            <span>Aspect ratio</span>
+            <span>Aspect ratio:</span>
             <strong>{image.aspectRatio}</strong>
           </div>
         )}
@@ -56,7 +56,11 @@ const ImageDetails = async ({ params }: TransformationPageParams) => {
         <div className="transformation-grid">
           {/* MEDIA UPLOADER */}
           <div className="flex flex-col gap-4">
-            <h3 className="h3-bold text-dark-600">Original</h3>
+            <div className=" pb-[10px] border-b  ">
+              <span className="media-uploader-kicker">INPUT PREVIEW</span>
+              <h3 className="h3-bold">Original</h3>
+
+            </div>
 
             <Image
               width={getImageSize(image.transformationType, image, "width")}

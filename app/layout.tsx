@@ -3,6 +3,7 @@ import "./globals.css"
 import { ClerkProvider } from "@clerk/nextjs"
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://web-lumina-ai.vercel.app"),
   title: {
     default: "Lumina AI — AI Image Creation Studio",
     template: "%s | Lumina AI",
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://lumina.ai",
+    url: "https://web-lumina-ai.vercel.app",
     siteName: "Lumina AI",
     title: "Lumina AI — AI Image Creation Studio",
     description: "Create, transform, restore, and refine images with AI-powered creative tools.",
@@ -62,7 +63,6 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "/manifest.json",
-  themeColor: "#0B0B0C",
 }
 
 export const viewport: Viewport = {

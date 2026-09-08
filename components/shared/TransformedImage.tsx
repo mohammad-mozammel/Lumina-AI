@@ -5,7 +5,7 @@ import { CldImage, getCldImageUrl } from 'next-cloudinary';
 import { PlaceholderValue } from 'next/dist/shared/lib/get-img-props';
 import Image from 'next/image';
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Download, Sparkles } from 'lucide-react';
 
 const TransformedImage = ({ image, type, title, setIsTransforming, isTransforming, transformationConfig, hasDownload = false }: TransformedImageProps) => {
 
@@ -33,13 +33,7 @@ const TransformedImage = ({ image, type, title, setIsTransforming, isTransformin
                     hasDownload && (
                         <button className='download-btn' aria-label="Download transformed image"
                             onClick={downloadHandler}>
-                            <Image
-                                src='/assets/icons/download.svg'
-                                alt='download'
-                                width={24}
-                                height={24}
-                                className='pb-[6px]'>
-                            </Image>
+                            <Download  size={15}/>
                         </button>
                     )
                 }

@@ -4,8 +4,17 @@ const nextConfig = {
   swcMinify: true,
   compress: true,
   poweredByHeader: false,
+  productionBrowserSourceMaps: false,
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-toast'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-label',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-alert-dialog',
+    ],
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -16,6 +25,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+        port: '',
+      },
+      {
+        protocol: 'https',
+        hostname: 'image.pollinations.ai',
         port: '',
       },
     ],
@@ -38,6 +52,10 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
         ],
       },
@@ -68,6 +86,19 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: '/service-worker.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+        ],
+      },
     ]
   },
   async rewrites() {
@@ -77,6 +108,37 @@ const nextConfig = {
         destination: '/service-worker.js',
       },
     ]
+  },
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        minSize: 20000,
+        maxSize: 244000,
+        minChunks: 1,
+        maxAsyncRequests: 30,
+        maxInitialRequests: 30,
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          commons: {
+            name: 'commons',
+            chunks: 'all',
+            minChunks: 2,
+          },
+          lib: {
+            test: /[\\/]node_modules[\\/]/,
+            name(module) {
+              const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)[\\/]/)?.[1];
+              return `npm.${packageName?.replace('@', '')}`;
+            },
+            priority: 10,
+            chunks: 'all',
+          },
+        },
+      };
+    }
+    return config;
   },
 }
 

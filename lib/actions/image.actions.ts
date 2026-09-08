@@ -6,6 +6,7 @@ import { handleError } from "../utils";
 import User from "../database/models/user.model";
 import Image from "../database/models/image.model";
 import { redirect } from "next/navigation";
+import { updateCredits } from "./user.actions";
 
 const populateUser = (query: any) => query.populate({
   path: 'author',
@@ -186,6 +187,86 @@ export async function getUserImages({
       totalPages: Math.ceil(totalImages / limit),
     };
   } catch (error) {
+    handleError(error);
+  }
+}
+
+// GENERATE IMAGE (Text-to-Image) - Using Pollinations.AI (FREE, no API key needed)
+export async function generateImage({
+  prompt,
+  aspectRatio,
+  userId,
+  path,
+}: {
+  prompt: string;
+  aspectRatio: string;
+  userId: string;
+  path: string;
+}) {
+  try {
+    await connectToDatabase();
+
+    const user = await User.findById(userId);
+    if (!user) throw new Error("User not found");
+
+    if (user.creditBalance < 1) throw new Error("Insufficient credits");
+
+    // Map aspect ratio to width/height
+    const [w, h] = aspectRatio.split(":").map(Number);
+    const width = 1024;
+    const height = Math.round(1024 * (h / w));
+
+    // Use Pollinations.AI - FREE, no API key required
+    // https://pollinations.ai/
+    const encodedPrompt = encodeURIComponent(prompt);
+    const generatedImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&model=flux`;
+
+    // Download the image as buffer first
+    const imageResponse = await fetch(generatedImageUrl);
+    if (!imageResponse.ok) {
+      throw new Error("Failed to generate image from Pollinations.AI");
+    }
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const base64Image = Buffer.from(imageBuffer).toString("base64");
+    const dataUri = `data:image/png;base64,${base64Image}`;
+
+    // Upload generated image to Cloudinary from buffer
+    const cloudinary = (await import("cloudinary")).v2;
+    cloudinary.config({
+      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    const uploadResult = await cloudinary.uploader.upload(dataUri, {
+      folder: "lumina/generated",
+      resource_type: "image",
+    });
+
+    // Deduct credit
+    await updateCredits(userId, -1);
+
+    // Save to database
+    const newImage = await Image.create({
+      title: prompt.slice(0, 50),
+      transformationType: "generate",
+      publicId: uploadResult.public_id,
+      secureURL: uploadResult.secure_url,
+      width: uploadResult.width,
+      height: uploadResult.height,
+      config: { prompt, aspectRatio },
+      prompt,
+      aspectRatio,
+      author: user._id,
+    });
+
+    revalidatePath(path);
+
+    return JSON.parse(JSON.stringify(newImage));
+  } catch (error: any) {
+    if (error?.detail?.includes("insufficient credit") || error?.status === 402) {
+      throw new Error("Replicate API credits required. Add credits at https://replicate.com/account/billing");
+    }
     handleError(error);
   }
 }

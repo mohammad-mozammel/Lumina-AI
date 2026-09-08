@@ -19,6 +19,7 @@ import {
   Layers3,
   UserRound,
   Image as ImageIcon,
+  Zap,
 } from "lucide-react";
 import {
   SkeletonDashboardHero,
@@ -32,6 +33,12 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const tools = [
+  {
+    label: "Generate Image",
+    desc: "Create from text",
+    href: "/transformations/add/generate",
+    icon: <Sparkles size={17} />,
+  },
   {
     label: "Enhance",
     desc: "Restore clarity",
@@ -102,7 +109,7 @@ async function DashboardContent({
             work while you stay in control.
           </p>
           <div className="dashboard-hero-actions">
-            <Link href="/transformations/add/fill" className="primary-button">
+            <Link href="/transformations/add/generate" className="primary-button">
               <Sparkles size={15} /> Start creating
             </Link>
             <Link href="#tools" className="secondary-button light">
@@ -118,7 +125,7 @@ async function DashboardContent({
         </div>
       </section>
 
-      <section className="stats-grid">
+      {/* <section className="stats-grid">
         <article>
           <span>Images created</span>
           <strong>{totalImages}</strong>
@@ -147,7 +154,7 @@ async function DashboardContent({
             <Download size={13} /> Showing current page
           </small>
         </article>
-      </section>
+      </section> */}
 
       <section id="tools" className="dashboard-section">
         <div className="section-head">
@@ -171,7 +178,7 @@ async function DashboardContent({
       </section>
 
       <section className="dashboard-section dashboard-library">
-        <div className="collection-heading">
+        {/* <div className="collection-heading">
           <h2>Your photo library</h2>
           <div className="flex items-center gap-2 text-sm muted">
             <ImageIcon size={14} />
@@ -184,7 +191,7 @@ async function DashboardContent({
               </>
             )}
           </div>
-        </div>
+        </div> */}
         <Suspense fallback={<SkeletonCollectionGrid count={4} />}>
           <Collection
             hasSearch

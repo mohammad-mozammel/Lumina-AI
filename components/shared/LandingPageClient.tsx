@@ -22,6 +22,7 @@ type LandingImage = {
 }
 
 const tools = [
+  { title: "Generate Image", text: "Create images from text prompts.", icon: Sparkles, image: "/assets/images/Enhance.webp" },
   { title: "Enhance", text: "Restore clarity and detail.", icon: Wand2, image: "/assets/images/Enhance.webp" },
   { title: "Remove Background", text: "Instantly remove and clean backgrounds.", icon: ScanLine, image: "/assets/images/Remove Background.webp" },
   { title: "Object Remove", text: "Erase unwanted objects in seconds.", icon: Eraser, image: "/assets/images/Object Remove.webp" },
@@ -122,7 +123,7 @@ function ProductPreview() {
           <div className="lv2-dashboard-create"><span>+</span> Create <b>›</b></div>
           <small className="lv2-dashboard-label">Workspace</small>
           {[
-            ["▦", "Overview"], ["✣", "Image Restore"], ["⌁", "Generative Fill"],
+            ["✣", "Generate Image"], ["✣", "Image Restore"], ["⌁", "Generative Fill"],
             ["⌘", "Object Remove"], ["♢", "Object Recolor"], ["▧", "Background Remove"],
           ].map(([icon, label], index) => <div className={`lv2-dashboard-nav ${index === 0 ? "is-active" : ""}`} key={label}><span>{icon}</span>{label}{index === 0 ? <b>•</b> : null}</div>)}
           <small className="lv2-dashboard-label lv2-dashboard-label-account">Account</small>
@@ -142,7 +143,7 @@ function ProductPreview() {
             <div><small>Library</small><strong>∞</strong><span>⇩ Save & export</span></div>
           </div>
           <div className="lv2-dashboard-section-head"><h4>Tools for every image</h4></div>
-          <div className="lv2-dashboard-tools">{["Enhance", "Remove Background", "Object Remove", "Recolor", "Generative Fill"].map((tool, index) => <div key={tool}><i>{["✣", "⌁", "♢", "♧", "✣"][index]}</i><strong>{tool}</strong><small>{["Restore clarity", "Clean cutouts", "Erase distractions", "Change details", "Extend the frame"][index]}</small><b>›</b></div>)}</div>
+          <div className="lv2-dashboard-tools">{["Generate Image", "Enhance", "Remove Background", "Object Remove", "Recolor", "Generative Fill"].map((tool, index) => <div key={tool}><i>{["✣", "✣", "⌁", "⌘", "♢", "⌁"][index]}</i><strong>{tool}</strong><small>{["Create from text", "Restore clarity", "Clean cutouts", "Erase distractions", "Change details", "Extend the frame"][index]}</small><b>›</b></div>)}</div>
           <div className="lv2-dashboard-library-head"><h4>Recent creations</h4><span>⌕ &nbsp; Search</span></div>
           <div className="lv2-dashboard-library">
             {showcasePlaceholders.map((src) => <Image key={src} src={src} width={500} height={500} alt="Lumina AI creation" />)}
@@ -240,7 +241,7 @@ export default function LandingPage({ isSignedIn, recentImages = [] }: { isSigne
 
       <section className="lv2-section lv2-tools-section" id="tools">
         <div className="lv2-section-head"><div><span className="lv2-kicker"><Sparkles size={13} /> POWERFUL AI TOOLS</span><h2>Everything you need to<br />create without limits.</h2></div><p>From simple edits to complete transformations, Lumina AI gives you the tools to bring your ideas to life.</p></div>
-        <div className="lv2-tools-grid">{tools.map(({ title, text, icon: Icon, image }) => <article className="lv2-tool-card" key={title}><div className="lv2-tool-top"><span><Icon size={14} /></span><ArrowRight size={14} /></div><h3>{title}</h3><p>{text}</p><div className="lv2-tool-image"><Image src={image} alt="" width={600} height={400} loading="lazy" /></div></article>)}</div>
+        <div className="lv2-tools-grid">{tools.map(({ title, text, icon: Icon, image }) => <article className="lv2-tool-card" key={title}><div className="lv2-tool-top"><span><Icon size={18} /></span><ArrowRight size={18} /></div><h3>{title}</h3><p>{text}</p><div className="lv2-tool-image"><Image src={image} alt="" width={600} height={400} loading="lazy" /></div></article>)}</div>
       </section>
 
       <section className="lv2-section lv2-how" id="use-cases">
@@ -336,6 +337,6 @@ export default function LandingPage({ isSignedIn, recentImages = [] }: { isSigne
       <section className="lv2-cta"><div className="lv2-orbits"><Sparkles size={15} /><Sparkles size={15} /><Sparkles size={15} /></div><span className="lv2-kicker lv2-kicker-dark"> <Sparkles size={13} />START CREATING TODAY</span><h2>Create less friction.<br /><em>Create more.</em></h2><p>Join creators already building faster with Lumina AI.</p><Link href={href} className="lv2-lime-button">{label} <ArrowRight size={14} /></Link></section>
     </main>
 
-    <footer className="lv2-footer"><div className="lv2-footer-top"><div><Link href="/" className="lv2-brand lv2-footer-brand"><span><Image src="/lumina-icon.png" alt="" width={31} height={31} /></span><h3>Lumina AI</h3></Link><p>AI image creation & transformation studio<br />for creators who want more control.</p><div className="lv2-socials"><span>𝕏</span><span>in</span><span>◎</span><span>▶</span></div></div><div className="lv2-footer-col"><span>Product</span><a href="#product">Overview</a><a href="#tools">Features</a><a href="#pricing">Pricing</a><a href="#use-cases">Changelog</a></div><div className="lv2-footer-col"><span>Tools</span><a href="#tools">Enhance</a><a href="#tools">Remove Background</a><a href="#tools">Object Remove</a><a href="#tools">Generative Fill</a><a href="#tools">Recolor</a></div><div className="lv2-footer-col"><span>Resources</span><a href="#resources">Blog</a><a href="#resources">Docs</a><a href="#resources">Tutorials</a><a href="#resources">Help Center</a></div><div className="lv2-footer-col"><span>Company</span><a href="#product">About</a><a href="#product">Careers</a><a href="#product">Contact</a><a href="#product">Privacy Policy</a><a href="#product">Terms of Service</a></div></div><div className="lv2-footer-bottom"><span>© 2026 Lumina AI. All rights reserved.</span><span>Made for visual work.</span></div></footer>
+    <footer className="lv2-footer"><div className="lv2-footer-top"><div><Link href="/" className="lv2-brand lv2-footer-brand"><span><Image src="/lumina-icon.png" alt="" width={31} height={31} /></span><h3>Lumina AI</h3></Link><p>AI image creation & transformation studio<br />for creators who want more control.</p><div className="lv2-socials"><span>𝕏</span><span>in</span><span>◎</span><span>▶</span></div></div><div className="lv2-footer-col"><span>Product</span><a href="#product">Overview</a><a href="#tools">Features</a><a href="#pricing">Pricing</a><a href="#use-cases">Changelog</a></div><div className="lv2-footer-col"><span>Tools</span><a href="#tools">Generate Image</a><a href="#tools">Enhance</a><a href="#tools">Remove Background</a><a href="#tools">Object Remove</a><a href="#tools">Generative Fill</a><a href="#tools">Recolor</a></div><div className="lv2-footer-col"><span>Resources</span><a href="#resources">Blog</a><a href="#resources">Docs</a><a href="#resources">Tutorials</a><a href="#resources">Help Center</a></div><div className="lv2-footer-col"><span>Company</span><a href="#product">About</a><a href="#product">Careers</a><a href="#product">Contact</a><a href="#product">Privacy Policy</a><a href="#product">Terms of Service</a></div></div><div className="lv2-footer-bottom"><span>© 2026 Lumina AI. All rights reserved.</span><span>Made for visual work.</span></div></footer>
   </div>
 }
